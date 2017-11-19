@@ -3,6 +3,27 @@
 // Author2: Scott Higgins
 // CS 4460, Fall 2017
 
+var svg = d3.select('svg');
+
+var svgWidth = +svg.attr('width');
+var svgHeight = +svg.attr('height');
+
+var padding = {t: 20, r: 20, b: 40, l: 250};
+var plotPadding = 50;
+// var chartG = svg.append("g").attr("transform", "translate(" + padding.l + "," + padding.t + ")");
+
+var projection = d3.geoAlbersUsa()
+    .scale(800)
+    .translate([svgWidth/2,200]);
+var path = d3.geoPath()
+    .projection(projection);
+
+d3.json("./data/us.json", function(error, us) {
+  svg.append("path")
+      .attr("class", "states")
+      .datum(topojson.feature(us, us.objects.states))
+      .attr("d", path);
+});
 
 // College data
 d3.csv('./data/colleges.csv',
@@ -58,6 +79,5 @@ function(error, dataset){
 
     colleges = dataset;
 
-    console.log(colleges);
 
 });
