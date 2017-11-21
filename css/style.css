@@ -10,3 +10,9 @@ body {
   fill: #ccc;
   stroke: #fff;
 }
+
+.d3-tip h5{
+  font-size: 14px;
+  font-weight: 600;
+  margin: 2px 10px 4px 2px;
+}

@@ -8,21 +8,67 @@ var svg = d3.select('svg');
 var svgWidth = +svg.attr('width');
 var svgHeight = +svg.attr('height');
 
-var padding = {t: 20, r: 20, b: 40, l: 250};
+var padding = {t: 20, r: 20, b: 20, l: 20};
 var plotPadding = 50;
-// var chartG = svg.append("g").attr("transform", "translate(" + padding.l + "," + padding.t + ")");
+var comparePadding = 20;
+
+var compareWidth = svgWidth/4 - padding.r;
+var compareHeight = (svgHeight - padding.t - padding.b - comparePadding) / 2;
+
+var filterWidth = svgWidth/4 - padding.r;
+var filterHeight = svgHeight - padding.t - padding.b
+
+var toolTip = d3.tip()
+    .attr("class", "d3-tip")
+    .offset([-5, 0])
+    .html(function(d) {
+        return '<h5>' + d.name + '</h5>'
+    });
+
+svg.call(toolTip);
+
+var usColleges;
 
 var projection = d3.geoAlbersUsa()
-    .scale(800)
-    .translate([svgWidth/2,200]);
+    .scale(900)
+    .translate([svgWidth/2,225]);
 var path = d3.geoPath()
     .projection(projection);
 
 d3.json("./data/us.json", function(error, us) {
-  svg.append("path")
-      .attr("class", "states")
-      .datum(topojson.feature(us, us.objects.states))
-      .attr("d", path);
+    var map = svg.append('g')
+        .attr('class', 'mapOfStates');
+
+    map.append("path")
+        .attr("class", "states")
+        .datum(topojson.feature(us, us.objects.states))
+        .attr("d", path);
+
+    var dotsOnMap = svg.append('g')
+        .attr('class', 'dotsOnMap');
+
+    var dots = dotsOnMap.selectAll('dot')
+        .data(usColleges);
+
+    var dotsEnter = dots.enter()
+        .append('circle')
+        .attr('class', 'dot')
+        .attr('r', 2.5)
+        .style('fill', '#1d80a5')
+        .style('opacity', '0.7');
+
+    dotsEnter.on('mouseover', toolTip.show)
+        .on('mouseout', toolTip.hide);
+
+    dots.merge(dotsEnter)
+        .attr('cx', function(d) {
+            console.log(d.name)
+            return projection([d.longitude, d.latitude])[0];
+        })
+        .attr('cy', function(d) {
+            return projection([d.longitude, d.latitude])[1];
+        })
+
 });
 
 // College data
@@ -30,6 +76,8 @@ d3.csv('./data/colleges.csv',
 function(row){
     return {
         name: row['Name'],
+        latitude: +row['Latitude'],
+        longitude: +row['Longitude'],
         control: row['Control'],
         region: row['Region'],
         locale: row['Locale'],
@@ -77,7 +125,52 @@ function(error, dataset){
         return;
     }
 
-    colleges = dataset;
+    //filters out the colleges that are not in the US
+    usColleges = dataset.filter(function(d) {
+        return projection([d.longitude, d.latitude]) != null;
+    })
+
+    //creates a group for the 1st college to compare (top left box)
+    college1 = svg.append('g')
+        .attr('class', 'collegeCmp1')
+        .attr('transform', 'translate(' + [padding.l, padding.t] + ')')
+
+    college1.append('rect')
+        .attr('width', compareWidth)
+        .attr('height', compareHeight)
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+        .attr('stroke-width', '1.5')
+        .attr('stroke-opacity', '0.1');
+
+    college2 = svg.append('g')
+        .attr('class', 'collegeCmp2')
+        .attr('transform', 'translate(' + [padding.l, padding.t + compareHeight + comparePadding] + ')')
+
+    college2.append('rect')
+        .attr('width', compareWidth)
+        .attr('height', compareHeight)
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+        .attr('stroke-width', '1.5')
+        .attr('stroke-opacity', '0.1');
+
+    filterColleges = svg.append('g')
+        .attr('class', 'filterColleges')
+        .attr('transform', 'translate(' + [svgWidth - padding.r - filterWidth, padding.t] + ')')
+
+    filterColleges.append('rect')
+        .attr('width', filterWidth)
+        .attr('height', filterHeight)
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+        .attr('stroke-width', '1.5')
+        .attr('stroke-opacity', '0.1');
+
+
+
+
+
 
 
 });
