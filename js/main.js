@@ -22,13 +22,16 @@ var filterHeight = svgHeight - padding.t - padding.b
 var attributeHeight = 100;
 var attributeWidth = filterWidth - 20;
 
+var satScale = d3.scaleLinear()
+    .rangeRound([0, attributeWidth])
+
 var brushCell;
 
-// var brush = d3.brushX()
-//     .extent([[0, 0], [histWidth, histHeight]])
-//     .on('start', brushstart)
-//     .on('brush', brushmove)
-//     .on('end', brushend);
+var brush = d3.brushX()
+    .extent([[0,10], [attributeWidth, attributeHeight+10]])
+    .on('start', brushstart)
+    .on('brush', brushmove)
+    .on('end', brushend);
 
 var toolTip = d3.tip()
     .attr("class", "d3-tip")
@@ -56,37 +59,17 @@ d3.json("./data/us.json", function(error, us) {
         .datum(topojson.feature(us, us.objects.states))
         .attr("d", path);
 
-    var dotsOnMap = svg.append('g')
-        .attr('class', 'dotsOnMap');
-
-    var dots = dotsOnMap.selectAll('dot')
-        .data(usColleges);
-
-    var dotsEnter = dots.enter()
-        .append('circle')
-        .attr('class', 'dot')
-        .attr('r', 2.5)
-        .style('fill', '#1d80a5')
-        .style('opacity', '0.7');
-
-    dotsEnter.on('mouseover', toolTip.show)
-        .on('mouseout', toolTip.hide);
-
-    dots.merge(dotsEnter)
-        .attr('cx', function(d) {
-            return projection([d.longitude, d.latitude])[0];
-        })
-        .attr('cy', function(d) {
-            return projection([d.longitude, d.latitude])[1];
-        })
-
+    updateDots()
 });
+
+
 
 // College data
 d3.csv('./data/colleges.csv',
 function(row){
     return {
         name: row['Name'],
+        show: true,
         latitude: +row['Latitude'],
         longitude: +row['Longitude'],
         control: row['Control'],
@@ -182,23 +165,77 @@ function(error, dataset){
             return d.sat_average;
         });
 
-    var satScale = d3.scaleLinear()
-        .domain(satExtent)
-        .rangeRound([0, attributeWidth])
+    satScale.domain(satExtent)
 
     filterColleges.append('g')
-        .attr('class', 'axis axis-grid')
-        .attr('transform', 'translate(' + [10, attributeHeight] + ')')
+        .attr('class', 'axis axis-x')
+        .attr('transform', 'translate(' + [10, attributeHeight+10] + ')')
         .call(d3.axisBottom(satScale).tickFormat(d3.format("")))
 
     filterColleges.append('g')
-        .attr('class', 'brush')
         .attr('transform', 'translate(' + [10, 0] + ')')
-        .call(d3.brushX()
-            .extent([[0,0], [attributeWidth, attributeHeight]])
-            .on('end', brushended));
+        .call(brush)
 });
 
-function brushended() {
+function updateDots() {
+    //checks to see if the show attribute is true and filters colleges
+    showColleges = usColleges.filter(function(d) {
+        return d.show;
+    })
 
+    var dots = svg.selectAll('.dot')
+        .data(showColleges, function(d) {
+            return d.name;
+        });
+
+    var dotsEnter = dots.enter()
+        .append('g')
+        .attr('class', 'dot')
+
+    dotsEnter.merge(dots)
+        .attr('transform', function(d) {
+            return 'translate(' + [projection([d.longitude, d.latitude])[0], projection([d.longitude, d.latitude])[1]] + ')'
+        });
+
+    dotsEnter.append('circle')
+        .attr('r', 2.5)
+        .attr('fill', '#1d80a5')
+        .attr('opacity', '0.7')
+
+    dotsEnter.on('mouseover', toolTip.show)
+        .on('mouseout', toolTip.hide);
+
+    dots.exit().remove();
+}
+
+function brushstart(cell) {
+    if (brushCell != this) {
+        brush.move(d3.select(brushCell), null);
+
+        brushCell = this;
+    }
+}
+
+function brushmove(cell) {
+    var e = d3.event.selection;
+    if(e) {
+        usColleges.forEach(function(d) {
+            if (e[0] > satScale(d.sat_average) || e[1] < satScale(d.sat_average)) {
+                d.show = false;
+            } else {
+                d.show = true;
+            }
+        })
+        updateDots()
+    }
+}
+
+function brushend() {
+    if (!d3.event.selection) {
+        usColleges.forEach(function(d) {
+            d.show = true;
+        })
+        updateDots()
+        brushCell = undefined;
+    }
 }

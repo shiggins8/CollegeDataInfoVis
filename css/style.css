@@ -11,10 +11,15 @@ body {
   stroke: #fff;
 }
 
-/*.axis-grid .domain {
-    fill: #ddd;
+circle.hidden {
+    fill-opacity: 0.0;
+}
+
+
+.axis-x .domain {
+    fill: none;
     stroke: none;
-}*/
+}
 
 .d3-tip h5{
   font-size: 14px;
