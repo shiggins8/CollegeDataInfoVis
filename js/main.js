@@ -10,20 +10,23 @@ var svgHeight = +svg.attr('height');
 
 var padding = {t: 20, r: 20, b: 20, l: 20};
 // var plotPadding = 50;
-var comparePadding = 20;
+var plotPadding = 20;
 
 var compareWidth = svgWidth/4 - padding.r;
-var compareHeight = (svgHeight - padding.t - padding.b - comparePadding) / 2;
+var compareHeight = (svgHeight - padding.t - padding.b - plotPadding) / 2;
 
 var filterWidth = svgWidth/4 - padding.r;
-var filterHeight = svgHeight - padding.t - padding.b
+var filterHeight = svgHeight - padding.t - padding.b;
+var filterAttributes = ['admission_rate', 'act_median', 'sat_average'];
+var extentByAttribute = {};
 
 //height & width for the filter attributes (ex: sat average, act)
 var attributeHeight = 100;
 var attributeWidth = filterWidth - 20;
 
-var satScale = d3.scaleLinear()
-    .rangeRound([0, attributeWidth])
+var xScaleFilter = d3.scaleLinear()
+    .rangeRound([0, attributeWidth]);
+var xAxisFilter = d3.axisBottom(xScaleFilter).tickFormat(d3.format(""))
 
 var brushCell;
 
@@ -139,7 +142,7 @@ function(error, dataset){
 
     college2 = svg.append('g')
         .attr('class', 'collegeCmp2')
-        .attr('transform', 'translate(' + [padding.l, padding.t + compareHeight + comparePadding] + ')')
+        .attr('transform', 'translate(' + [padding.l, padding.t + compareHeight + plotPadding] + ')')
 
     college2.append('rect')
         .attr('width', compareWidth)
@@ -161,20 +164,61 @@ function(error, dataset){
         .attr('stroke-width', '1.5')
         .attr('stroke-opacity', '0.1');
 
-    var satExtent = d3.extent(usColleges, function(d) {
-            return d.sat_average;
-        });
+    filterAttributes.forEach(function(attribute) {
+        extentByAttribute[attribute] = d3.extent(usColleges, function(d) {
+            return d[attribute];
+        })
+    })
 
-    satScale.domain(satExtent)
+    filterGraph = svg.selectAll('.filterGraph')
+        .data(filterAttributes)
+        .enter()
+        .append('g')
+        .attr('class', 'filterGraph')
+        .attr('transform', function(attribute, i) {
+            console.log(i)
+            return 'translate(' + [svgWidth - padding.r - filterWidth, padding.t + (i * (attributeHeight + plotPadding + 10))] + ')'
+        })
 
-    filterColleges.append('g')
+    filterGraph.append('g')
         .attr('class', 'axis axis-x')
         .attr('transform', 'translate(' + [10, attributeHeight+10] + ')')
-        .call(d3.axisBottom(satScale).tickFormat(d3.format("")))
+        .each(function(attribute) {
+            xScaleFilter.domain(extentByAttribute[attribute])
+            d3.select(this).call(xAxisFilter)
+        })
 
-    filterColleges.append('g')
+    filterGraph.append('g')
         .attr('transform', 'translate(' + [10, 0] + ')')
         .call(brush)
+
+    // var satExtent = d3.extent(usColleges, function(d) {
+    //         return d.sat_average;
+    //     });
+    //
+    // satScale.domain(satExtent)
+    //
+    // filterColleges = svg.append('g')
+    //     .attr('class', 'filterColleges')
+    //     .attr('transform', 'translate(' + [svgWidth - padding.r - filterWidth, padding.t] + ')')
+    //
+    // filterColleges.append('rect')
+    //     .attr('width', filterWidth)
+    //     .attr('height', filterHeight)
+    //     .attr('fill', 'white')
+    //     .attr('stroke', 'black')
+    //     .attr('stroke-width', '1.5')
+    //     .attr('stroke-opacity', '0.1');
+    //
+    //
+    // filterColleges.append('g')
+    //     .attr('class', 'axis axis-x')
+    //     .attr('transform', 'translate(' + [10, attributeHeight+10] + ')')
+    //     .call(d3.axisBottom(satScale).tickFormat(d3.format("")))
+    //
+    // filterColleges.append('g')
+    //     .attr('transform', 'translate(' + [10, 0] + ')')
+    //     .call(brush)
 });
 
 function updateDots() {
@@ -194,7 +238,9 @@ function updateDots() {
 
     dotsEnter.merge(dots)
         .attr('transform', function(d) {
-            return 'translate(' + [projection([d.longitude, d.latitude])[0], projection([d.longitude, d.latitude])[1]] + ')'
+            cx = projection([d.longitude, d.latitude])[0]
+            cy = projection([d.longitude, d.latitude])[1]
+            return 'translate(' + [cx, cy] + ')'
         });
 
     dotsEnter.append('circle')
@@ -209,18 +255,21 @@ function updateDots() {
 }
 
 function brushstart(cell) {
-    if (brushCell != this) {
-        brush.move(d3.select(brushCell), null);
-
-        brushCell = this;
-    }
+    xScaleFilter.domain(extentByAttribute[cell]);
+    // if (brushCell != this) {
+    //     brush.move(d3.select(brushCell), null);
+    //
+    //     xScaleFilter.domain(extentByAttribute[cell]);
+    //
+    //     brushCell = this;
+    // }
 }
 
 function brushmove(cell) {
     var e = d3.event.selection;
     if(e) {
         usColleges.forEach(function(d) {
-            if (e[0] > satScale(d.sat_average) || e[1] < satScale(d.sat_average)) {
+            if (e[0] > xScaleFilter(d[cell]) || e[1] < xScaleFilter(d[cell])) {
                 d.show = false;
             } else {
                 d.show = true;
