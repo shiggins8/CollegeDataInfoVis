@@ -9,7 +9,7 @@ var svgWidth = +svg.attr('width');
 var svgHeight = +svg.attr('height');
 
 var padding = {t: 20, r: 20, b: 20, l: 20};
-var plotPadding = 50;
+// var plotPadding = 50;
 var comparePadding = 20;
 
 var compareWidth = svgWidth/4 - padding.r;
@@ -17,6 +17,18 @@ var compareHeight = (svgHeight - padding.t - padding.b - comparePadding) / 2;
 
 var filterWidth = svgWidth/4 - padding.r;
 var filterHeight = svgHeight - padding.t - padding.b
+
+//height & width for the filter attributes (ex: sat average, act)
+var attributeHeight = 100;
+var attributeWidth = filterWidth - 20;
+
+var brushCell;
+
+// var brush = d3.brushX()
+//     .extent([[0, 0], [histWidth, histHeight]])
+//     .on('start', brushstart)
+//     .on('brush', brushmove)
+//     .on('end', brushend);
 
 var toolTip = d3.tip()
     .attr("class", "d3-tip")
@@ -62,7 +74,6 @@ d3.json("./data/us.json", function(error, us) {
 
     dots.merge(dotsEnter)
         .attr('cx', function(d) {
-            console.log(d.name)
             return projection([d.longitude, d.latitude])[0];
         })
         .attr('cy', function(d) {
@@ -167,10 +178,27 @@ function(error, dataset){
         .attr('stroke-width', '1.5')
         .attr('stroke-opacity', '0.1');
 
+    var satExtent = d3.extent(usColleges, function(d) {
+            return d.sat_average;
+        });
 
+    var satScale = d3.scaleLinear()
+        .domain(satExtent)
+        .rangeRound([0, attributeWidth])
 
+    filterColleges.append('g')
+        .attr('class', 'axis axis-grid')
+        .attr('transform', 'translate(' + [10, attributeHeight] + ')')
+        .call(d3.axisBottom(satScale).tickFormat(d3.format("")))
 
-
-
-
+    filterColleges.append('g')
+        .attr('class', 'brush')
+        .attr('transform', 'translate(' + [10, 0] + ')')
+        .call(d3.brushX()
+            .extent([[0,0], [attributeWidth, attributeHeight]])
+            .on('end', brushended));
 });
+
+function brushended() {
+
+}

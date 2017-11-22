@@ -11,6 +11,11 @@ body {
   stroke: #fff;
 }
 
+/*.axis-grid .domain {
+    fill: #ddd;
+    stroke: none;
+}*/
+
 .d3-tip h5{
   font-size: 14px;
   font-weight: 600;
