@@ -19,9 +19,14 @@ var filterWidth = svgWidth/4 - padding.r;
 var filterHeight = svgHeight - padding.t - padding.b;
 var filterAttributes = ['admission_rate', 'act_median', 'sat_average'];
 var extentByAttribute = {};
+var filterTitles = {
+    admission_rate: 'Admission Rate',
+    act_median: 'ACT Median',
+    sat_average: 'SAT Average'
+}
 
 //height & width for the filter attributes (ex: sat average, act)
-var attributeHeight = 100;
+var attributeHeight = 90;
 var attributeWidth = filterWidth - 20;
 
 var xScaleFilter = d3.scaleLinear()
@@ -72,7 +77,9 @@ d3.csv('./data/colleges.csv',
 function(row){
     return {
         name: row['Name'],
-        show: true,
+        admission_rate_show: true,
+        act_median_show: true,
+        sat_average_show: true,
         latitude: +row['Latitude'],
         longitude: +row['Longitude'],
         control: row['Control'],
@@ -170,15 +177,21 @@ function(error, dataset){
         })
     })
 
-    filterGraph = svg.selectAll('.filterGraph')
+    var filterGraph = svg.selectAll('.filterGraph')
         .data(filterAttributes)
         .enter()
         .append('g')
         .attr('class', 'filterGraph')
         .attr('transform', function(attribute, i) {
-            console.log(i)
-            return 'translate(' + [svgWidth - padding.r - filterWidth, padding.t + (i * (attributeHeight + plotPadding + 10))] + ')'
+            return 'translate(' + [svgWidth - padding.r - filterWidth, padding.t + (i * (attributeHeight + plotPadding + 15))] + ')'
         })
+
+    filterGraph.append('text')
+        .attr('class', 'filterTitle')
+        .attr('transform', 'translate(' + [10, attributeHeight + 40] + ')')
+        .text(function(attribute) {
+            return filterTitles[attribute];
+        });
 
     filterGraph.append('g')
         .attr('class', 'axis axis-x')
@@ -191,41 +204,14 @@ function(error, dataset){
     filterGraph.append('g')
         .attr('transform', 'translate(' + [10, 0] + ')')
         .call(brush)
-
-    // var satExtent = d3.extent(usColleges, function(d) {
-    //         return d.sat_average;
-    //     });
-    //
-    // satScale.domain(satExtent)
-    //
-    // filterColleges = svg.append('g')
-    //     .attr('class', 'filterColleges')
-    //     .attr('transform', 'translate(' + [svgWidth - padding.r - filterWidth, padding.t] + ')')
-    //
-    // filterColleges.append('rect')
-    //     .attr('width', filterWidth)
-    //     .attr('height', filterHeight)
-    //     .attr('fill', 'white')
-    //     .attr('stroke', 'black')
-    //     .attr('stroke-width', '1.5')
-    //     .attr('stroke-opacity', '0.1');
-    //
-    //
-    // filterColleges.append('g')
-    //     .attr('class', 'axis axis-x')
-    //     .attr('transform', 'translate(' + [10, attributeHeight+10] + ')')
-    //     .call(d3.axisBottom(satScale).tickFormat(d3.format("")))
-    //
-    // filterColleges.append('g')
-    //     .attr('transform', 'translate(' + [10, 0] + ')')
-    //     .call(brush)
 });
 
 function updateDots() {
     //checks to see if the show attribute is true and filters colleges
     showColleges = usColleges.filter(function(d) {
-        return d.show;
+        return d.admission_rate_show && d.act_median_show && d.sat_average_show;
     })
+    console.log(showColleges)
 
     var dots = svg.selectAll('.dot')
         .data(showColleges, function(d) {
@@ -270,9 +256,9 @@ function brushmove(cell) {
     if(e) {
         usColleges.forEach(function(d) {
             if (e[0] > xScaleFilter(d[cell]) || e[1] < xScaleFilter(d[cell])) {
-                d.show = false;
+                d[cell + '_show'] = false;
             } else {
-                d.show = true;
+                d[cell + '_show'] = true;
             }
         })
         updateDots()
@@ -282,7 +268,9 @@ function brushmove(cell) {
 function brushend() {
     if (!d3.event.selection) {
         usColleges.forEach(function(d) {
-            d.show = true;
+            filterAttributes.forEach(function(attribute) {
+                d[attribute + '_show'] = true;
+            })
         })
         updateDots()
         brushCell = undefined;
