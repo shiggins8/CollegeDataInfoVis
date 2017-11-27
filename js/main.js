@@ -10,14 +10,17 @@ var svgHeight = +svg.attr('height');
 
 var padding = {t: 20, r: 20, b: 20, l: 20};
 // var plotPadding = 50;
-var plotPadding = 20;
+var plotPadding = 40;
 
 var compareWidth = svgWidth/4 - padding.r;
-var compareHeight = (svgHeight - padding.t - padding.b - plotPadding) / 2;
+var compareHeight = (svgHeight) / 2;
 
-var filterWidth = svgWidth/4 - padding.r;
-var filterHeight = svgHeight - padding.t - padding.b;
-var filterAttributes = ['admission_rate', 'act_median', 'sat_average'];
+// var filterWidthRect = (svgWidth * (2/3)) - padding.l - padding.r;
+// var filterHeightRect = svgHeight/2 - padding.t - padding.b - 40;
+var filterWidth = (svgWidth * (2/3)) - padding.l - padding.r - plotPadding;
+var filterHeight = svgHeight/2 - padding.t - padding.b - 40 - plotPadding;
+
+var filterAttributes = ['admission_rate', 'act_median', 'sat_average', 'undergrad_pop'];
 var extentByAttribute = {};
 var filterTitles = {
     admission_rate: 'Admission Rate',
@@ -29,17 +32,28 @@ var filterTitles = {
 var attributeHeight = 90;
 var attributeWidth = filterWidth - 20;
 
-var xScaleFilter = d3.scaleLinear()
-    .rangeRound([0, attributeWidth]);
-var xAxisFilter = d3.axisBottom(xScaleFilter).tickFormat(d3.format(""))
+// var xScaleFilter = d3.scaleLinear()
+//     .rangeRound([0, attributeWidth]);
+// var xAxisFilter = d3.axisBottom(xScaleFilter).tickFormat(d3.format(""));
+
+var xScaleFilter = d3.scalePoint()
+    .domain(d3.range(filterAttributes.length))
+    .range([0, filterWidth - 20]);
+var y = {};
+
+var yScaleFilter = d3.scaleLinear()
+    .rangeRound([filterHeight, 0])
+var yAxisFilter = d3.axisLeft(yScaleFilter).tickFormat(d3.format(""));
+
+var foreground;
 
 var brushCell;
 
-var brush = d3.brushX()
-    .extent([[0,10], [attributeWidth, attributeHeight+10]])
-    .on('start', brushstart)
-    .on('brush', brushmove)
-    .on('end', brushend);
+// var brush = d3.brushX()
+//     .extent([[0,10], [attributeWidth, attributeHeight+10]])
+    // .on('start', brushstart)
+    // .on('brush', brushmove)
+    // .on('end', brushend);
 
 var toolTip = d3.tip()
     .attr("class", "d3-tip")
@@ -54,7 +68,7 @@ var usColleges;
 
 var projection = d3.geoAlbersUsa()
     .scale(900)
-    .translate([svgWidth/2,225]);
+    .translate([svgWidth/2,210]);
 var path = d3.geoPath()
     .projection(projection);
 
@@ -69,7 +83,6 @@ d3.json("./data/us.json", function(error, us) {
 
     updateDots()
 });
-
 
 
 // College data
@@ -147,10 +160,10 @@ function(error, dataset){
         .attr('stroke-width', '1.5')
         .attr('stroke-opacity', '0.1');
 
-    //creates a rectangle - bottom left
+    //creates a rectangle - top right
     college2 = svg.append('g')
         .attr('class', 'collegeCmp2')
-        .attr('transform', 'translate(' + [padding.l, padding.t + compareHeight + plotPadding] + ')')
+        .attr('transform', 'translate(' + [svgWidth - (svgWidth/4), padding.t] + ')')
 
     college2.append('rect')
         .attr('width', compareWidth)
@@ -161,17 +174,20 @@ function(error, dataset){
         .attr('stroke-opacity', '0.1');
 
     // right side rectangle
-    filterColleges = svg.append('g')
+    filterCollegesGroup = svg.append('g')
         .attr('class', 'filterColleges')
-        .attr('transform', 'translate(' + [svgWidth - padding.r - filterWidth, padding.t] + ')')
+        .attr('transform', 'translate(' + [padding.l + (svgWidth/6), padding.t + 400] + ')')
 
-    filterColleges.append('rect')
-        .attr('width', filterWidth)
-        .attr('height', filterHeight)
+    filterCollegesGroup.append('rect')
+        .attr('width', filterWidth + plotPadding)
+        .attr('height', filterHeight + plotPadding)
         .attr('fill', 'white')
         .attr('stroke', 'black')
         .attr('stroke-width', '1.5')
         .attr('stroke-opacity', '0.1');
+
+    filterColleges = filterCollegesGroup.append('g')
+        .attr('transform', 'translate(' + [plotPadding, plotPadding/2] + ')')
 
     filterAttributes.forEach(function(attribute) {
         extentByAttribute[attribute] = d3.extent(usColleges, function(d) {
@@ -179,33 +195,83 @@ function(error, dataset){
         })
     })
 
-    var filterGraph = svg.selectAll('.filterGraph')
+    // scale and brush for each attribute (sat, act, admision, etc)
+    filterAttributes.forEach(function(attribute) {
+        y[attribute] = d3.scaleLinear()
+            .domain(extentByAttribute[attribute])
+            .rangeRound([filterHeight, 0]);
+
+        y[attribute].brush = d3.brushY()
+            .extent([[-10,0], [10,filterHeight]])
+            .on('start', brushstart)
+            .on('brush', brushmove)
+            .on('end', brushend)
+    })
+
+    var attributeG = filterColleges.selectAll('.attribute')
         .data(filterAttributes)
         .enter()
         .append('g')
-        .attr('class', 'filterGraph')
+        .attr('class', 'attribute')
         .attr('transform', function(attribute, i) {
-            return 'translate(' + [svgWidth - padding.r - filterWidth, padding.t + (i * (attributeHeight + plotPadding + 15))] + ')'
+            return 'translate(' + xScaleFilter(i) + ')';
         })
 
-    filterGraph.append('text')
-        .attr('class', 'filterTitle')
-        .attr('transform', 'translate(' + [10, attributeHeight + 40] + ')')
-        .text(function(attribute) {
-            return filterTitles[attribute];
+    var axes = attributeG.append('g')
+        .attr('class', 'axis')
+        .each(function(attribute) {
+            // yScaleFilter.domain(extentByAttribute[attribute])
+            // d3.select(this).call(yAxis)
+            d3.select(this).call(yAxisFilter.scale(y[attribute]));
+        })
+
+    axes.append('g')
+        .attr('class', 'brush')
+        .each(function(attribute) {
+            d3.select(this).call(y[attribute].brush);
+            // d3.select(this).call(d3.brushY()
+            //     .extent([[-10,0], [10,filterHeight]])
+            //     .on('start', brushstart)
+            //     .on('brush', brushmove)
+            //     .on('end', brushend))
         });
 
-    filterGraph.append('g')
-        .attr('class', 'axis axis-x')
-        .attr('transform', 'translate(' + [10, attributeHeight+10] + ')')
-        .each(function(attribute) {
-            xScaleFilter.domain(extentByAttribute[attribute])
-            d3.select(this).call(xAxisFilter)
-        })
 
-    filterGraph.append('g')
-        .attr('transform', 'translate(' + [10, 0] + ')')
-        .call(brush)
+    //
+    // var filterGraph = svg.selectAll('.filterGraph')
+    //     .data(filterAttributes)
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'filterGraph')
+    //     .attr('transform', function(attribute, i) {
+    //         return 'translate(' + [svgWidth - padding.r - filterWidth, padding.t + (i * (attributeHeight + plotPadding + 15))] + ')'
+    //     })
+    //
+    // filterGraph.append('text')
+    //     .attr('class', 'filterTitle')
+    //     .attr('transform', 'translate(' + [10, attributeHeight + 40] + ')')
+    //     .text(function(attribute) {
+    //         return filterTitles[attribute];
+    //     });
+    //
+    // filterGraph.append('g')
+    //     .attr('class', 'axis axis-x')
+    //     .attr('transform', 'translate(' + [10, attributeHeight+10] + ')')
+    //     .each(function(attribute) {
+    //         // xScaleFilter.domain(extentByAttribute[attribute])
+    //         // d3.select(this).call(xAxisFilter)
+    //         d3.select(this).call(axis.scale(x[attribute]))
+    //     })
+    //
+
+    // console.log(x)
+    // filterGraph.append('g')
+    //     .attr('class', 'brush')
+    //     .each(function(attribute) {
+    //         d3.select(this).call(x[attribute].brush);
+    //     })
+        // .attr('transform', 'translate(' + [10, 0] + ')')
+        // .call(brush)
 });
 
 function updateDots() {
