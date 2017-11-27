@@ -134,7 +134,7 @@ function(error, dataset){
         return projection([d.longitude, d.latitude]) != null;
     })
 
-    //creates a group for the 1st college to compare (top left box)
+    //creates a rectangle - top left
     college1 = svg.append('g')
         .attr('class', 'collegeCmp1')
         .attr('transform', 'translate(' + [padding.l, padding.t] + ')')
@@ -147,6 +147,7 @@ function(error, dataset){
         .attr('stroke-width', '1.5')
         .attr('stroke-opacity', '0.1');
 
+    //creates a rectangle - bottom left
     college2 = svg.append('g')
         .attr('class', 'collegeCmp2')
         .attr('transform', 'translate(' + [padding.l, padding.t + compareHeight + plotPadding] + ')')
@@ -159,6 +160,7 @@ function(error, dataset){
         .attr('stroke-width', '1.5')
         .attr('stroke-opacity', '0.1');
 
+    // right side rectangle
     filterColleges = svg.append('g')
         .attr('class', 'filterColleges')
         .attr('transform', 'translate(' + [svgWidth - padding.r - filterWidth, padding.t] + ')')
@@ -232,7 +234,7 @@ function updateDots() {
     dotsEnter.append('circle')
         .attr('r', 2.5)
         .attr('fill', '#1d80a5')
-        .attr('opacity', '0.7')
+        .attr('opacity', '0.7');
 
     dotsEnter.on('mouseover', toolTip.show)
         .on('mouseout', toolTip.hide);
