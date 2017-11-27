@@ -210,10 +210,9 @@ function(error, dataset){
 
 function updateDots() {
     //checks to see if the show attribute is true and filters colleges
-    showColleges = usColleges.filter(function(d) {
+    var showColleges = usColleges.filter(function(d) {
         return d.admission_rate_show && d.act_median_show && d.sat_average_show;
     })
-    console.log(showColleges)
 
     var dots = svg.selectAll('.dot')
         .data(showColleges, function(d) {
