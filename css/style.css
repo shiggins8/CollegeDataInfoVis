@@ -15,10 +15,21 @@ circle.hidden {
     fill-opacity: 0.0;
 }
 
-.filterTitle {
+.title {
     font-size: 12px;
 }
 
+.foreground path {
+    fill: none;
+    stroke: steelblue;
+    stroke-opacity: .5;
+    stroke-width: 1.5px;
+}
+
+.foreground path.fade {
+    stroke: #000;
+    stroke-opacity: 0.05;
+}
 
 .axis-x .domain {
     fill: none;
