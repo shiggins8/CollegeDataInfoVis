@@ -59,8 +59,14 @@ var yAxisFilter = d3.axisLeft(yScaleFilter).tickFormat(d3.format(""));
 
 var line = d3.line();
 var foreground;
+var background;
 
-var brushCell;
+var paralelCoordinateBrushes = {
+    admission_rate: null,
+    act_median: null,
+    sat_average: null,
+    undergrad_pop: null
+}
 
 var toolTip = d3.tip()
     .attr("class", "d3-tip")
@@ -87,8 +93,6 @@ d3.json("./data/us.json", function(error, us) {
         .attr("class", "states")
         .datum(topojson.feature(us, us.objects.states))
         .attr("d", path);
-
-    updateDots()
 });
 
 
@@ -155,6 +159,8 @@ function(error, dataset){
         return projection([d.longitude, d.latitude]) != null;
     })
 
+    extents = filterAttributes.map(function(p) { return [0,0]; });
+
     //creates a rectangle - top left
     college1 = svg.append('g')
         .attr('class', 'collegeCmp1')
@@ -181,7 +187,7 @@ function(error, dataset){
         .attr('stroke-width', '1.5')
         .attr('stroke-opacity', '0.1');
 
-    // right side rectangle
+    // parallel coordinates bottom rectangle
     filterCollegesGroup = svg.append('g')
         .attr('class', 'filterColleges')
         .attr('transform', 'translate(' + [padding.l + (svgWidth/6), padding.t + 400] + ')')
@@ -215,6 +221,18 @@ function(error, dataset){
             .on('brush', brushmove)
             .on('end', brushend)
     })
+
+    background = filterColleges.append('g')
+        .attr('class', 'background')
+        .selectAll('path')
+        .data(usColleges)
+        .enter()
+        .append('path')
+        .attr('d', function(d) {
+            return line(filterAttributes.map(function(attribute, i) {
+                return [xScaleFilter(i), y[attribute](d[attribute])];
+            }));
+        });
 
     foreground = filterColleges.append('g')
         .attr('class', 'foreground')
@@ -251,6 +269,8 @@ function(error, dataset){
         .each(function(attribute) {
             d3.select(this).call(y[attribute].brush);
         });
+
+    updateDots();
 });
 
 function updateDots() {
@@ -294,9 +314,20 @@ function path(d) {
 
 function brushstart(cell) {
     yScaleFilter.domain(extentByAttribute[cell]);
+    for (var i = 0; i < filterAttributes.length; ++i) {
+        if (d3.event.target == y[filterAttributes[i]].brush) {
+            paralelCoordinateBrushes[filterAttributes[i]] = "active";
+        }
+    }
 }
 
 function brushmove(cell) {
+    for (var i = 0; i < filterAttributes.length; ++i) {
+        if (d3.event.target == y[filterAttributes[i]].brush) {
+            extents[i] = d3.event.selection.map(y[filterAttributes[i]].invert, y[filterAttributes[i]]);
+        }
+    }
+
     var e = d3.event.selection;
     if(e) {
         usColleges.forEach(function(d) {
@@ -308,16 +339,41 @@ function brushmove(cell) {
         })
         updateDots()
     }
+
+    foreground.style("display", function(d) {
+        return filterAttributes.every(function(p, i) {
+            if (extents[i][0] == 0 && extents[i][1] == 0) {
+                return true;
+            }
+            return extents[i][1] <= d[p] && d[p] <= extents[i][0];
+        }) ? null : "none";
+    });
 }
 
 function brushend() {
-    if (!d3.event.selection) {
+    if(!d3.event.selection) {
+        for (var i = 0; i < filterAttributes.length; ++i) {
+            if (d3.event.target == y[filterAttributes[i]].brush) {
+                paralelCoordinateBrushes[filterAttributes[i]] = null;
+            }
+        }
+        if (noActiveBrushes()) {
+            clearAllGray();
+        }
         usColleges.forEach(function(d) {
             filterAttributes.forEach(function(attribute) {
                 d[attribute + '_show'] = true;
             })
         })
         updateDots()
-        brushCell = undefined;
+
     }
+}
+
+function noActiveBrushes() {
+    return paralelCoordinateBrushes.admission_rate == null && paralelCoordinateBrushes.act_median == null && paralelCoordinateBrushes.sat_average == null && paralelCoordinateBrushes.undergrad_pop == null
+}
+
+function clearAllGray() {
+    d3.selectAll("g.foreground path").style("display", null);
 }

@@ -19,15 +19,33 @@ circle.hidden {
     font-size: 12px;
 }
 
+.background path {
+  fill: none;
+  stroke: #ddd;
+  shape-rendering: crispEdges;
+}
+
 .foreground path {
+  fill: none;
+  /*stroke: steelblue;*/
+}
+
+/*.foreground path {
     fill: none;
     stroke-opacity: .5;
     stroke-width: 1.5px;
+}*/
+
+.brush .extent {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
 }
 
-.foreground path.fade {
-    stroke: #000;
-    stroke-opacity: 0.05;
+.axis line, .axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
 }
 
 .axis-x .domain {
