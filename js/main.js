@@ -26,6 +26,13 @@ var filterTitles = {
     undergrad_pop: 'Undergraduate Population'
 }
 
+var regionKey = {
+    admission_rate: 'Admission Rate',
+    act_median: 'ACT Median',
+    sat_average: 'SAT Average',
+    undergrad_pop: 'Undergraduate Population'
+}
+
 //height & width for the filter attributes (ex: sat average, act)
 var attributeHeight = 90;
 var attributeWidth = filterWidth - 20;
@@ -138,6 +145,14 @@ function(error, dataset){
         return projection([d.longitude, d.latitude]) != null;
     })
 
+    nested = d3.nest()
+        .key(function(d) {
+            return d.region;
+        })
+        .entries(usColleges)
+
+    console.log(nested)
+
     //creates a rectangle - top left
     college1 = svg.append('g')
         .attr('class', 'collegeCmp1')
@@ -205,7 +220,11 @@ function(error, dataset){
         .data(usColleges)
         .enter()
         .append('path')
-        .attr('d', path)
+        .attr('d', function(d) {
+            return line(filterAttributes.map(function(attribute, i) {
+                return [xScaleFilter(i), y[attribute](d[attribute])];
+            }));
+        })
         .attr('class', function(d) {
             return d.region;
         });

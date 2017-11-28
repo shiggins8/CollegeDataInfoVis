@@ -21,7 +21,7 @@ circle.hidden {
 
 .foreground path {
     fill: none;
-    stroke: steelblue;
+    /*stroke: steelblue;*/
     stroke-opacity: .5;
     stroke-width: 1.5px;
 }
@@ -29,6 +29,38 @@ circle.hidden {
 .foreground path.fade {
     stroke: #000;
     stroke-opacity: 0.05;
+}
+
+.Southwest {
+    stroke: #f60000;
+}
+
+.Rocky.Mountains {
+    stroke: #f67c00;
+}
+
+.Mid-Atlantic {
+    stroke: #f4f600;
+}
+
+.Great.Lakes {
+    stroke: #9df600;
+}
+
+.Southeast {
+    stroke: #00f6cb;
+}
+
+.Great.Plains {
+    stroke: #0068f6;
+}
+
+.New.England {
+    stroke: #5f00f6;
+}
+
+.Far.West {
+    stroke: #f600a2;
 }
 
 .axis-x .domain {
