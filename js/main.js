@@ -33,6 +33,17 @@ var regionKey = {
     undergrad_pop: 'Undergraduate Population'
 }
 
+var colorKey = {
+    'Southwest': '#f60000',
+    'Rocky Mountains': '#f67c00',
+    'Mid-Atlantic': '#f4f600',
+    'Great Lakes': '#9df600',
+    'Southeast': '#00f6cb',
+    'Great Plains': '#0068f6',
+    'New England': '#5f00f6',
+    'Far West': '#f600a2'
+}
+
 //height & width for the filter attributes (ex: sat average, act)
 var attributeHeight = 90;
 var attributeWidth = filterWidth - 20;
@@ -40,7 +51,6 @@ var attributeWidth = filterWidth - 20;
 var xScaleFilter = d3.scalePoint()
     .domain(d3.range(filterAttributes.length))
     .range([0, filterWidth - 20]);
-// var xScaleFilter = d3.scaleOrdinal().domain(filterAttributes).range([0, filterWidth-20]);
 var y = {};
 
 var yScaleFilter = d3.scaleLinear()
@@ -217,8 +227,8 @@ function(error, dataset){
                 return [xScaleFilter(i), y[attribute](d[attribute])];
             }));
         })
-        .attr('class', function(d) {
-            return d.region;
+        .attr('stroke', function(d) {
+            return colorKey[d.region]
         });
 
     var attributeG = filterColleges.selectAll('.attribute')
@@ -256,7 +266,7 @@ function updateDots() {
 
     var dotsEnter = dots.enter()
         .append('g')
-        .attr('class', 'dot')
+        .attr('class', 'dot');
 
     dotsEnter.merge(dots)
         .attr('transform', function(d) {
@@ -267,8 +277,10 @@ function updateDots() {
 
     dotsEnter.append('circle')
         .attr('r', 2.5)
-        .attr('fill', '#1d80a5')
-        .attr('opacity', '0.7');
+        .attr('fill', function(d) {
+            return colorKey[d.region]
+        })
+        .attr('opacity', '0.6');
 
     dotsEnter.on('mouseover', toolTip.show)
         .on('mouseout', toolTip.hide);
