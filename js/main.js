@@ -175,11 +175,11 @@ function(error, dataset){
         .attr('stroke-opacity', '0.1');
 
     //creates a rectangle - top right
-    college2 = svg.append('g')
-        .attr('class', 'collegeCmp2')
+    collegeList = svg.append('g')
+        .attr('class', 'collegeList')
         .attr('transform', 'translate(' + [svgWidth - (svgWidth/4), padding.t] + ')')
 
-    college2.append('rect')
+    collegeList.append('rect')
         .attr('width', compareWidth)
         .attr('height', compareHeight)
         .attr('fill', 'white')
@@ -271,6 +271,7 @@ function(error, dataset){
         });
 
     updateDots();
+    updateList();
 });
 
 function updateDots() {
@@ -308,6 +309,40 @@ function updateDots() {
     dots.exit().remove();
 }
 
+function updateList() {
+    var showColleges = usColleges.filter(function(d) {
+        return d.admission_rate_show && d.act_median_show && d.sat_average_show && d.undergrad_pop_show;
+    })
+
+    showColleges = showColleges.sort(function(a,b) {
+        return a.name - b.name;
+    })
+
+    var collegeList = svg.selectAll('.collegeList')
+
+    var collegeNames = collegeList.selectAll('.collegeName')
+        .data(showColleges, function(d) {
+            return d.name;
+        })
+
+    var namesEnter = collegeNames.enter()
+        .append('g')
+        .attr('class', 'collegeName');
+
+    collegeNames.merge(namesEnter)
+    .attr('transform', function(d,i){
+        return 'translate('+[10, (i*15) + 20]+')'; // Update position based on index
+    });
+
+    namesEnter.append('text')
+        .attr('class', 'collegeNameText')
+        .text(function(d) {
+            return d.name;
+        })
+
+    collegeNames.exit().remove();
+}
+
 function path(d) {
     return line(filterAttributes.map(function(attribute, i) { return [xScaleFilter(i), y[attribute](d[attribute])]; }));
 }
@@ -337,7 +372,8 @@ function brushmove(cell) {
                 d[cell + '_show'] = true;
             }
         })
-        updateDots()
+        updateDots();
+        updateList();
     }
 
     foreground.style("display", function(d) {
@@ -365,7 +401,8 @@ function brushend() {
                 d[attribute + '_show'] = true;
             })
         })
-        updateDots()
+        updateDots();
+        updateList();
 
     }
 }
