@@ -34,14 +34,14 @@ var regionKey = {
 }
 
 var colorKey = {
-    'Southwest': '#f60000',
-    'Rocky Mountains': '#f67c00',
-    'Mid-Atlantic': '#f4f600',
-    'Great Lakes': '#9df600',
-    'Southeast': '#00f6cb',
-    'Great Plains': '#0068f6',
-    'New England': '#5f00f6',
-    'Far West': '#f600a2'
+    'Southwest': '#F29262', //orange
+    'Rocky Mountains': '#98C793', //green
+    'Mid-Atlantic': '#F9C862', //yellow
+    'Great Lakes': '#EC5F67', //red
+    'Southeast': '#68B0AF', //blue-green
+    'Great Plains': '#669ACC', //blue
+    'New England': '#ff9999', //pink
+    'Far West': '#C593C4' //purple
 }
 
 //height & width for the filter attributes (ex: sat average, act)
@@ -280,7 +280,7 @@ function updateDots() {
         .attr('fill', function(d) {
             return colorKey[d.region]
         })
-        .attr('opacity', '0.6');
+        .attr('opacity', '0.7');
 
     dotsEnter.on('mouseover', toolTip.show)
         .on('mouseout', toolTip.hide);
