@@ -145,14 +145,6 @@ function(error, dataset){
         return projection([d.longitude, d.latitude]) != null;
     })
 
-    nested = d3.nest()
-        .key(function(d) {
-            return d.region;
-        })
-        .entries(usColleges)
-
-    console.log(nested)
-
     //creates a rectangle - top left
     college1 = svg.append('g')
         .attr('class', 'collegeCmp1')
@@ -290,13 +282,6 @@ function path(d) {
 
 function brushstart(cell) {
     yScaleFilter.domain(extentByAttribute[cell]);
-    // if (brushCell != this) {
-    //     brush.move(d3.select(brushCell), null);
-    //
-    //     xScaleFilter.domain(extentByAttribute[cell]);
-    //
-    //     brushCell = this;
-    // }
 }
 
 function brushmove(cell) {
