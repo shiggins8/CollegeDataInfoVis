@@ -9,14 +9,11 @@ var svgWidth = +svg.attr('width');
 var svgHeight = +svg.attr('height');
 
 var padding = {t: 20, r: 20, b: 20, l: 20};
-// var plotPadding = 50;
 var plotPadding = 40;
 
 var compareWidth = svgWidth/4 - padding.r;
 var compareHeight = (svgHeight) / 2;
 
-// var filterWidthRect = (svgWidth * (2/3)) - padding.l - padding.r;
-// var filterHeightRect = svgHeight/2 - padding.t - padding.b - 40;
 var filterWidth = (svgWidth * (2/3)) - padding.l - padding.r - plotPadding;
 var filterHeight = svgHeight/2 - padding.t - padding.b - 40 - plotPadding;
 
@@ -32,10 +29,6 @@ var filterTitles = {
 var attributeHeight = 90;
 var attributeWidth = filterWidth - 20;
 
-// var xScaleFilter = d3.scaleLinear()
-//     .rangeRound([0, attributeWidth]);
-// var xAxisFilter = d3.axisBottom(xScaleFilter).tickFormat(d3.format(""));
-
 var xScaleFilter = d3.scalePoint()
     .domain(d3.range(filterAttributes.length))
     .range([0, filterWidth - 20]);
@@ -48,12 +41,6 @@ var yAxisFilter = d3.axisLeft(yScaleFilter).tickFormat(d3.format(""));
 var foreground;
 
 var brushCell;
-
-// var brush = d3.brushX()
-//     .extent([[0,10], [attributeWidth, attributeHeight+10]])
-    // .on('start', brushstart)
-    // .on('brush', brushmove)
-    // .on('end', brushend);
 
 var toolTip = d3.tip()
     .attr("class", "d3-tip")
@@ -93,6 +80,7 @@ function(row){
         admission_rate_show: true,
         act_median_show: true,
         sat_average_show: true,
+        undergrad_pop_show: true,
         latitude: +row['Latitude'],
         longitude: +row['Longitude'],
         control: row['Control'],
@@ -220,8 +208,6 @@ function(error, dataset){
     var axes = attributeG.append('g')
         .attr('class', 'axis')
         .each(function(attribute) {
-            // yScaleFilter.domain(extentByAttribute[attribute])
-            // d3.select(this).call(yAxis)
             d3.select(this).call(yAxisFilter.scale(y[attribute]));
         })
 
@@ -229,11 +215,6 @@ function(error, dataset){
         .attr('class', 'brush')
         .each(function(attribute) {
             d3.select(this).call(y[attribute].brush);
-            // d3.select(this).call(d3.brushY()
-            //     .extent([[-10,0], [10,filterHeight]])
-            //     .on('start', brushstart)
-            //     .on('brush', brushmove)
-            //     .on('end', brushend))
         });
 
 
@@ -277,7 +258,7 @@ function(error, dataset){
 function updateDots() {
     //checks to see if the show attribute is true and filters colleges
     var showColleges = usColleges.filter(function(d) {
-        return d.admission_rate_show && d.act_median_show && d.sat_average_show;
+        return d.admission_rate_show && d.act_median_show && d.sat_average_show && d.undergrad_pop_show;
     })
 
     var dots = svg.selectAll('.dot')
@@ -308,7 +289,7 @@ function updateDots() {
 }
 
 function brushstart(cell) {
-    xScaleFilter.domain(extentByAttribute[cell]);
+    yScaleFilter.domain(extentByAttribute[cell]);
     // if (brushCell != this) {
     //     brush.move(d3.select(brushCell), null);
     //
@@ -322,7 +303,7 @@ function brushmove(cell) {
     var e = d3.event.selection;
     if(e) {
         usColleges.forEach(function(d) {
-            if (e[0] > xScaleFilter(d[cell]) || e[1] < xScaleFilter(d[cell])) {
+            if (e[0] > yScaleFilter(d[cell]) || e[1] < yScaleFilter(d[cell])) {
                 d[cell + '_show'] = false;
             } else {
                 d[cell + '_show'] = true;
