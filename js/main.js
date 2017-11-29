@@ -3,7 +3,9 @@
 // Author2: Scott Higgins
 // CS 4460, Fall 2017
 
-var svg = d3.select('svg');
+var svg = d3.select('#mainSVG');
+
+var scrollSVG = d3.select('#scrollSVG');
 
 var svgWidth = +svg.attr('width');
 var svgHeight = +svg.attr('height');
@@ -175,17 +177,8 @@ function(error, dataset){
         .attr('stroke-opacity', '0.1');
 
     //creates a rectangle - top right
-    collegeList = svg.append('g')
+    collegeList = scrollSVG.append('g')
         .attr('class', 'collegeList')
-        .attr('transform', 'translate(' + [svgWidth - (svgWidth/4), padding.t] + ')')
-
-    collegeList.append('rect')
-        .attr('width', compareWidth)
-        .attr('height', compareHeight)
-        .attr('fill', 'white')
-        .attr('stroke', 'black')
-        .attr('stroke-width', '1.5')
-        .attr('stroke-opacity', '0.1');
 
     // parallel coordinates bottom rectangle
     filterCollegesGroup = svg.append('g')
@@ -318,7 +311,9 @@ function updateList() {
         return a.name - b.name;
     })
 
-    var collegeList = svg.selectAll('.collegeList')
+    document.getElementById('scrollSVG').setAttribute("height", (showColleges.length*20) + "px");
+
+    var collegeList = scrollSVG.selectAll('.collegeList')
 
     var collegeNames = collegeList.selectAll('.collegeName')
         .data(showColleges, function(d) {
@@ -376,7 +371,7 @@ function brushmove(cell) {
         updateList();
     }
 
-    updateLines()
+    updateLines();
 }
 
 function brushend() {
