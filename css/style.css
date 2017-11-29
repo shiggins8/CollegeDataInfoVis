@@ -15,12 +15,21 @@ circle.hidden {
     fill-opacity: 0.0;
 }
 
+circle.grow {
+    r: 5;
+    stroke: black;
+}
+
 .title {
     font-size: 12px;
 }
 
 .collegeNameText {
     font-size: 12px;
+}
+
+.collegeNameText:hover {
+    font-weight: bold;
 }
 
 #scrollContainer {
@@ -37,8 +46,16 @@ circle.hidden {
   shape-rendering: crispEdges;
 }
 
-.foreground path {
+.foregroundLine {
   fill: none;
+}
+
+.foregroundLine.hidden {
+    stroke-opacity: 0.1;
+}
+
+.foregroundLine.shown {
+    stroke-width: 3;
 }
 
 .brush .extent {

@@ -233,6 +233,7 @@ function(error, dataset){
         .data(usColleges)
         .enter()
         .append('path')
+        .attr('class', 'foregroundLine')
         .attr('d', function(d) {
             return line(filterAttributes.map(function(attribute, i) {
                 return [xScaleFilter(i), y[attribute](d[attribute])];
@@ -290,6 +291,7 @@ function updateDots() {
         });
 
     dotsEnter.append('circle')
+        .attr('class', 'circ')
         .attr('r', 2.5)
         .attr('fill', function(d) {
             return colorKey[d.region]
@@ -334,6 +336,9 @@ function updateList() {
         .text(function(d) {
             return d.name;
         })
+
+    namesEnter.on('mouseover', nameMouseover)
+    namesEnter.on('mouseout', nameMouseout)
 
     collegeNames.exit().remove();
 }
@@ -413,4 +418,28 @@ function noActiveBrushes() {
 
 function clearAllGray() {
     d3.selectAll("g.foreground path").style("display", null);
+}
+
+function nameMouseover() {
+    var college = d3.select(this).data()[0].name
+    svg.selectAll('.foregroundLine')
+        .classed('hidden', function(d) {
+            return college != d.name
+        })
+
+    svg.selectAll('.foregroundLine')
+        .classed('shown', function(d) {
+            return college == d.name
+        })
+
+    svg.selectAll('.circ')
+        .classed('grow', function(d) {
+            return college == d.name
+        })
+
+}
+
+function nameMouseout() {
+    svg.selectAll('.foregroundLine').classed('hidden', false)
+    svg.selectAll('.foregroundLine').classed('shown', false)
 }
