@@ -442,4 +442,5 @@ function nameMouseover() {
 function nameMouseout() {
     svg.selectAll('.foregroundLine').classed('hidden', false)
     svg.selectAll('.foregroundLine').classed('shown', false)
+    svg.selectAll('.circ').classed('grow', false)
 }
