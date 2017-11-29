@@ -234,11 +234,7 @@ function(error, dataset){
         .enter()
         .append('path')
         .attr('class', 'foregroundLine')
-        .attr('d', function(d) {
-            return line(filterAttributes.map(function(attribute, i) {
-                return [xScaleFilter(i), y[attribute](d[attribute])];
-            }));
-        })
+        .attr('d', paths)
         .attr('stroke', function(d) {
             return colorKey[d.region]
         });
@@ -292,16 +288,24 @@ function updateDots() {
 
     dotsEnter.append('circle')
         .attr('class', 'circ')
-        .attr('r', 2.5)
+        .attr('r', 0)
         .attr('fill', function(d) {
             return colorKey[d.region]
         })
         .attr('opacity', '0.7');
 
+    dotsEnter.selectAll('circle')
+        .transition().duration(1500).attr('r', 3);
+
     dotsEnter.on('mouseover', toolTip.show)
         .on('mouseout', toolTip.hide);
 
-    dots.exit().remove();
+    dots.exit()
+        .attr('class', 'exit')
+        .selectAll('circle')
+        .transition().duration(1500)
+        .attr('r', 0)
+        .remove();
 }
 
 function updateList() {
@@ -343,7 +347,7 @@ function updateList() {
     collegeNames.exit().remove();
 }
 
-function path(d) {
+function paths(d) {
     return line(filterAttributes.map(function(attribute, i) { return [xScaleFilter(i), y[attribute](d[attribute])]; }));
 }
 

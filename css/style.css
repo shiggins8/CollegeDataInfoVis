@@ -10,10 +10,11 @@ body {
   fill: #ccc;
   stroke: #fff;
 }
-
+/*
 circle.hidden {
     fill-opacity: 0.0;
-}
+    r: 0;
+}*/
 
 circle.grow {
     r: 5;
@@ -54,6 +55,7 @@ circle.grow {
 
 .foregroundLine.shown {
     stroke-width: 3;
+    stroke-opacity: 1;
 }
 
 .brush .extent {
