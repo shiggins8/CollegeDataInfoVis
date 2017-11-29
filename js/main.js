@@ -74,8 +74,11 @@ var toolTip = d3.tip()
     .attr("class", "d3-tip")
     .offset([-5, 0])
     .html(function(d) {
-        return '<h5>' + d.name + '</h5>'
-    });
+            return "<h5>"+d['name']+"</h5><table><thead><tr><td>Admission Rate</td><td>Undergraduate Population</td></tr></thead>"
+                 + "<tbody><tr><td>"+d.admission_rate+"</td><td>"+d.undergrad_pop+"</td></tr></tbody>"
+                 + "<thead><tr><td>ACT Median</td><td>SAT Average</td></tr></thead>"
+                 + "<tbody><tr><td>"+d.act_median+"</td><td colspan='2'>"+d.sat_average+"</td></tr></tbody></table>"
+        });
 
 svg.call(toolTip);
 
