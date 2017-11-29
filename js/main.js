@@ -349,11 +349,11 @@ function path(d) {
 
 function brushstart(cell) {
     yScaleFilter.domain(extentByAttribute[cell]);
-    for (var i = 0; i < filterAttributes.length; ++i) {
-        if (d3.event.target == y[filterAttributes[i]].brush) {
-            paralelCoordinateBrushes[filterAttributes[i]] = "active";
+    filterAttributes.forEach(function(attribute) {
+        if (d3.event.target == y[attribute].brush) {
+            paralelCoordinateBrushes[attribute] = 'active';
         }
-    }
+    })
 }
 
 function brushmove(cell) {
@@ -376,14 +376,7 @@ function brushmove(cell) {
         updateList();
     }
 
-    foreground.style("display", function(d) {
-        return filterAttributes.every(function(p, i) {
-            if (extents[i][0] == 0 && extents[i][1] == 0) {
-                return true;
-            }
-            return extents[i][1] <= d[p] && d[p] <= extents[i][0];
-        }) ? null : "none";
-    });
+    updateLines()
 }
 
 function brushend() {
@@ -391,6 +384,7 @@ function brushend() {
         for (var i = 0; i < filterAttributes.length; ++i) {
             if (d3.event.target == y[filterAttributes[i]].brush) {
                 paralelCoordinateBrushes[filterAttributes[i]] = null;
+                extents[i] = [0,0]
             }
         }
         if (noActiveBrushes()) {
@@ -403,8 +397,19 @@ function brushend() {
         })
         updateDots();
         updateList();
-
+        updateLines();
     }
+}
+
+function updateLines() {
+    foreground.style("display", function(d) {
+        return filterAttributes.every(function(p, i) {
+            if (extents[i][0] == 0 && extents[i][1] == 0) {
+                return true;
+            }
+            return extents[i][1] <= d[p] && d[p] <= extents[i][0];
+        }) ? null : "none";
+    });
 }
 
 function noActiveBrushes() {
