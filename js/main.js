@@ -311,7 +311,7 @@ function updateList() {
         return a.name - b.name;
     })
 
-    document.getElementById('scrollSVG').setAttribute("height", (showColleges.length*20) + "px");
+    document.getElementById('scrollSVG').setAttribute("height", (showColleges.length*15 + 10) + "px");
 
     var collegeList = scrollSVG.selectAll('.collegeList')
 
