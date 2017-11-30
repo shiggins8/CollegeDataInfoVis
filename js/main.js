@@ -100,6 +100,32 @@ d3.json("./data/us.json", function(error, us) {
         .attr("d", path);
 });
 
+var legend = svg.append('g')
+        .attr('transform', 'translate(1162,460)');
+
+legend.append('text')
+    .attr('class', 'legendtitle')
+    .attr('x', 6)
+    .attr('y', -15)
+    .text('School Regions');
+
+var keys = Object.keys(colorKey);
+
+for (var i = 0; i < keys.length; i++) {
+    legend.append('rect')
+        .attr('height', 18)
+        .attr('width', 18)
+        .attr('x', 0)
+        .attr('y', i*22)
+        .attr('fill', colorKey[keys[i]]);
+
+    legend.append('text')
+        .attr('class', 'legendlabel')
+        .attr('x', 20)
+        .attr('y', i*22+14)
+        .text(keys[i]);
+}
+
 
 // College data
 d3.csv('./data/colleges.csv',

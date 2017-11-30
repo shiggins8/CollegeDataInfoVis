@@ -108,3 +108,8 @@ circle:hover {
 .d3-tip thead tr {
   paddin-top: 10px;
 }
+
+.legendtitle {
+    font-weight: bolder;
+    text-decoration: underline;
+}
