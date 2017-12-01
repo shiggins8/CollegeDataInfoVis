@@ -10,11 +10,6 @@ body {
   fill: #ccc;
   stroke: #fff;
 }
-/*
-circle.hidden {
-    fill-opacity: 0.0;
-    r: 0;
-}*/
 
 circle.grow {
     r: 5;
@@ -129,4 +124,14 @@ circle:hover {
 
 .compare_title {
     text-anchor: middle;
+}
+
+.graph_title {
+    font-size: 50px;
+    font-weight: bold;
+}
+
+.authors {
+    font-size: 15px;
+    fill: gray;
 }

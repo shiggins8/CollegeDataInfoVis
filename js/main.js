@@ -129,6 +129,36 @@ for (var i = 0; i < keys.length; i++) {
         .text(keys[i]);
 }
 
+svg.append("text")
+    .attr('x', 20)
+    .attr('y', svgHeight-200)
+    .attr('class', 'graph_title')
+    .text('U.S.');
+
+svg.append("text")
+    .attr('x', 20)
+    .attr('y', svgHeight-150)
+    .attr('class', 'graph_title')
+    .text('Colleges');
+
+svg.append("text")
+    .attr('x', 20)
+    .attr('y', svgHeight-100)
+    .attr('class', 'graph_title')
+    .text('InfoVis');
+
+svg.append("text")
+    .attr('x', 20)
+    .attr('y', svgHeight-75)
+    .attr('class', 'authors')
+    .text('Stacee Freeman');
+
+svg.append("text")
+    .attr('x', 20)
+    .attr('y', svgHeight-55)
+    .attr('class', 'authors')
+    .text('Scott Higgins');
+
 
 // College data
 d3.csv('./data/colleges.csv',
