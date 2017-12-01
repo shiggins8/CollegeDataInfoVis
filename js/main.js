@@ -15,6 +15,8 @@ var plotPadding = 40;
 
 var compareWidth = svgWidth/4 - padding.r;
 var compareHeight = (svgHeight) / 2;
+var barBand = (compareHeight - 50) / 7;
+var barHeight = barBand * 0.5;
 
 var filterWidth = (svgWidth * (2/3)) - padding.l - padding.r - plotPadding;
 var filterHeight = svgHeight/2 - padding.t - padding.b - 40 - plotPadding;
@@ -62,6 +64,7 @@ var yAxisFilter = d3.axisLeft(yScaleFilter).tickFormat(d3.format(""));
 var line = d3.line();
 var foreground;
 var background;
+var selectedCollege;
 
 var paralelCoordinateBrushes = {
     admission_rate: null,
@@ -101,11 +104,11 @@ d3.json("./data/us.json", function(error, us) {
 });
 
 var legend = svg.append('g')
-        .attr('transform', 'translate(1162,460)');
+        .attr('transform', 'translate(1135,490)');
 
 legend.append('text')
     .attr('class', 'legendtitle')
-    .attr('x', 6)
+    .attr('x', 1)
     .attr('y', -15)
     .text('School Regions');
 
@@ -204,6 +207,13 @@ function(error, dataset){
         .attr('stroke', 'black')
         .attr('stroke-width', '1.5')
         .attr('stroke-opacity', '0.1');
+
+    college1.append("text")
+        .attr('x', compareWidth/2)
+        .attr('y', compareHeight/2)
+        .attr('class', 'instructions will_remove')
+        .attr('id', 'start_instructions')
+        .text('Select a school in the map or list to learn more');
 
     //creates a rectangle - top right
     collegeList = scrollSVG.append('g')
@@ -489,7 +499,180 @@ function nameMouseover() {
 }
 
 function collegeClick(college) {
-    console.log(college);
+    selectedCollege = college;
+    // Remove old components
+    var toRemove = d3.select('g.collegeCmp1').selectAll('.will_remove');
+    toRemove.remove();
+    var textlabel = college1.append("text")
+        .attr('x', compareWidth/2)
+        .attr('y', 20)
+        .attr('class', 'compare_title will_remove')
+        .attr('font-size', '14px')
+        .attr('font-weight', 'bold')
+        .text(college.name);
+
+    if (textlabel.node().getComputedTextLength() > (compareWidth-5)) {
+        textlabel.text(college.name.slice(0,41) + "...");
+    }
+
+    updateDetailView();
+}
+
+function compareSelectChanged() {
+    updateDetailView();
+}
+
+function updateDetailView() {
+    d3.select('.temp_graph').remove();
+    var select = d3.select('#compareSelect').node();
+    if (selectedCollege == null) {
+        return "";
+    }
+    if (select.options[select.selectedIndex].value == 'diversity') {
+        // Keys and things for racial diversity
+        var financialLabels = ['% White', '% Black', '% Hispanic', '% Asian', '% American Indian', '% Pacific Islander', '% Biracial'];
+        var financialKeys = ['percent_white', 'percent_black', 'percent_hispanic', 'percent_asian', 'percent_amer_indian', 'percent_pacific_islander', 'percent_biracial'];
+        var data = [];
+        financialKeys.forEach(function(attr) {
+            data.push(selectedCollege[attr]);
+        });
+        var maxFreq = d3.max(data, function(d){
+            return d;
+        });
+        var formatPercent = function(d) {
+            return d * 100 + '%';
+        }
+        var xScale = d3.scaleLinear()
+            .domain([0, maxFreq])
+            .range([0, (compareWidth-110-15)]);
+
+        var tempGroup = college1.append('g')
+            .attr('class', 'temp_graph will_remove')
+            .attr('transform', 'translate(110, 50)');
+
+        tempGroup.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate('+[0, 0]+')')
+            .call(d3.axisTop(xScale).ticks(5).tickFormat(formatPercent));
+
+        var bars = tempGroup.selectAll('.bar')
+            .data(data);
+
+        var barsEnter = bars.enter()
+            .append('g')
+            .attr('class', 'bar');
+
+        bars.merge(barsEnter)
+            .attr('transform', function(d,i){
+                return 'translate('+[0, i * barBand + 4]+')';
+            });
+
+        barsEnter.append('rect')
+            .attr('height', barHeight)
+            .attr('width', function(d){
+                return xScale(d);
+            })
+            .attr('fill', function(d) {
+                return colorKey[selectedCollege.region];
+            });
+
+        barsEnter.append('text')
+            .attr('x', -5)
+            .attr('dy', '1.1em')
+            .attr('font-size', '12px')
+            .attr('text-anchor', 'end')
+            .text(function(d, i){
+                return financialLabels[i];
+            });
+
+        bars.exit().remove();
+
+    } else {
+        var financeData = {
+            one: {
+                key: "average_cost",
+                label: "Average Cost"
+            },
+            two: {
+                key: "median_debt",
+                label: "Median Debt"
+            },
+            three: {
+                key: "percent_pell_recipients",
+                label: "% Pell Grants"
+            },
+            four: {
+                key: "percent_federal_loans",
+                label: "% Federal Loans"
+            },
+            five: {
+                key: "mean_earnings_after_eight",
+                label: "Mean Earnings After Grad"
+            },
+            six: {
+                key: "expenditure_per_student",
+                label: "Expenditure Per Student"
+            },
+            seven: {
+                key: "average_faculty_salary",
+                label: "Average Faculty Salary"
+            },
+        };
+        var tempGroup = college1.append('g')
+            .attr('class', 'temp_graph will_remove')
+            .attr('transform', 'translate('+((compareWidth/2)+15)+', 40)');
+
+        var tempKeys = Object.keys(financeData);
+
+        var bars = tempGroup.selectAll('.bar')
+            .data(tempKeys);
+
+        var barsEnter = bars.enter()
+            .append('g')
+            .attr('class', 'textbar');
+
+        bars.merge(barsEnter)
+            .attr('transform', function(d,i){
+                return 'translate('+[0, i * barBand + 4]+')';
+            });
+
+        barsEnter.append('text')
+            .attr('x', 5)
+            .attr('dy', '1.1em')
+            .attr('font-size', '13px')
+            .attr('text-anchor', 'start')
+            .text(function(d, i){
+                return customFormat(selectedCollege[financeData[tempKeys[i]].key], i);
+            });
+
+        barsEnter.append('text')
+            .attr('x', -5)
+            .attr('dy', '1.1em')
+            .attr('font-size', '13px')
+            .attr('text-anchor', 'end')
+            .text(function(d, i){
+                return financeData[tempKeys[i]].label + ": ";
+            });
+
+        bars.exit().remove();
+    }
+}
+
+function customFormat(word, idx) {
+    switch (idx) {
+        case 0:
+        case 1:
+        case 4:
+        case 5:
+            return "$"+word.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+        case 6:
+            return "$"+(word*10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+        case 2:
+        case 3:
+            return (word*100).toFixed(2) + "%";
+        default:
+            return word;
+    }
 }
 
 function nameMouseout() {

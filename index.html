@@ -9,6 +9,12 @@
 </head>
 <body>
     <div id="main">
+        <div style="position: absolute; top: 400px; left: 30px;">
+            <select class="custom-select small" id="compareSelect" onchange="compareSelectChanged()">
+                <option value="diversity">Diversity</option>
+                <option value="finances">Finances</option>
+            </select>
+        </div>
         <svg id="mainSVG" width="1320" height="720" style="border: 1px solid #777;">
             <foreignobject class="node" x="990" y="20" width="310" height="360">
                 <div id="scrollContainer">

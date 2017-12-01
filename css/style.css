@@ -112,10 +112,21 @@ circle:hover {
 .legendtitle {
     font-weight: bolder;
     text-decoration: underline;
+    font-size: 14px;
 }
 
 .pctitles {
     text-anchor: middle;
     font-size: 12px;
     font-weight: bold;
+}
+
+.instructions {
+    text-anchor: middle;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.compare_title {
+    text-anchor: middle;
 }
