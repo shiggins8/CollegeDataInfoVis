@@ -113,3 +113,9 @@ circle:hover {
     font-weight: bolder;
     text-decoration: underline;
 }
+
+.pctitles {
+    text-anchor: middle;
+    font-size: 12px;
+    font-weight: bold;
+}

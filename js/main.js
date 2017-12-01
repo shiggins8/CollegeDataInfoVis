@@ -218,9 +218,9 @@ function(error, dataset){
         .attr('width', filterWidth + plotPadding)
         .attr('height', filterHeight + plotPadding)
         .attr('fill', 'white')
-        .attr('stroke', 'black')
+        .attr('stroke', 'white')
         .attr('stroke-width', '1.5')
-        .attr('stroke-opacity', '0.1');
+        .attr('stroke-opacity', '1.0');
 
     filterColleges = filterCollegesGroup.append('g')
         .attr('transform', 'translate(' + [plotPadding, plotPadding/2] + ')')
@@ -275,6 +275,13 @@ function(error, dataset){
         .attr('class', 'attribute')
         .attr('transform', function(attribute, i) {
             return 'translate(' + xScaleFilter(i) + ')';
+        });
+
+    attributeG.append("text")
+        .attr("class", "pctitles")
+        .attr("dy", -8)
+        .text(function(d) {
+            return filterTitles[d];
         });
 
     var axes = attributeG.append('g')
