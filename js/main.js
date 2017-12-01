@@ -334,7 +334,10 @@ function updateDots() {
         .transition().duration(1500).attr('r', 3);
 
     dotsEnter.on('mouseover', toolTip.show)
-        .on('mouseout', toolTip.hide);
+        .on('mouseout', toolTip.hide)
+        .on('click', function(d) {
+            collegeClick(d);
+        });
 
     dots.exit()
         .attr('class', 'exit')
@@ -377,8 +380,11 @@ function updateList() {
             return d.name;
         })
 
-    namesEnter.on('mouseover', nameMouseover)
-    namesEnter.on('mouseout', nameMouseout)
+    namesEnter.on('mouseover', nameMouseover);
+    namesEnter.on('mouseout', nameMouseout);
+    namesEnter.on('click', function(d) {
+        collegeClick(d)
+    });
 
     collegeNames.exit().remove();
 }
@@ -425,16 +431,19 @@ function brushend() {
             if (d3.event.target == y[filterAttributes[i]].brush) {
                 paralelCoordinateBrushes[filterAttributes[i]] = null;
                 extents[i] = [0,0]
+                usColleges.forEach(function(d) {
+                    d[filterAttributes[i] + '_show'] = true;
+                })
             }
         }
         if (noActiveBrushes()) {
             clearAllGray();
+            usColleges.forEach(function(d) {
+                filterAttributes.forEach(function(attribute) {
+                    d[attribute + '_show'] = true;
+                })
+            });
         }
-        usColleges.forEach(function(d) {
-            filterAttributes.forEach(function(attribute) {
-                d[attribute + '_show'] = true;
-            })
-        })
         updateDots();
         updateList();
         updateLines();
@@ -477,6 +486,10 @@ function nameMouseover() {
             return college == d.name
         })
 
+}
+
+function collegeClick(college) {
+    console.log(college);
 }
 
 function nameMouseout() {
