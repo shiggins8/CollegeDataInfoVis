@@ -647,9 +647,10 @@ function updateDetailView() {
 
         barsEnter.append('text')
             .attr('x', -5)
-            .attr('dy', '1.1em')
-            .attr('font-size', '13px')
+            .attr('dy', '1.2em')
+            .attr('font-size', '12px')
             .attr('text-anchor', 'end')
+            .attr('font-weight', 'bold')
             .text(function(d, i){
                 return financeData[tempKeys[i]].label + ": ";
             });
